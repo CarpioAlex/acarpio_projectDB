@@ -1,5 +1,6 @@
 package com.acarpio.acarpio_projectdb;
 
+import android.database.sqlite.SQLiteConstraintException;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -8,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -76,8 +78,14 @@ public class MainActivity extends AppCompatActivity {
         createButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dbHelper.addComment(getCommentToAdd());
-                populateSpinner();
+                try {
+                    dbHelper.addComment(getCommentToAdd());
+                    populateSpinner();
+                } catch (SQLiteConstraintException e) {
+                    Toast.makeText(getApplicationContext(), "Comment already exists, must be unique.", Toast.LENGTH_SHORT).show();
+
+                }
+
             }});
 
         loadButton.setOnClickListener(new View.OnClickListener() {

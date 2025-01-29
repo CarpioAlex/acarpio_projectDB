@@ -3,6 +3,7 @@ package com.acarpio.acarpio_projectdb;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 public class DBHelper extends SQLiteOpenHelper {
 
     public DBHelper(Context c) {
-        super(c, "comments.db", null, 1);
+        super(c, "comments.db", null, 3);
     }
 
     @Override
@@ -21,23 +22,27 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.execSQL("CREATE TABLE " + Entities.CommentEntry.TABLE_NAME +
                 " (" + Entities.CommentEntry._ID + " INTEGER PRIMARY KEY," +
-                Entities.CommentEntry.COLUMN_NAME_TITLE + " TEXT," +
-                Entities.CommentEntry.COLUMN_NAME_TEXT + " TEXT)");
+                Entities.CommentEntry.COLUMN_NAME_TITLE + " TEXT UNIQUE," +
+                Entities.CommentEntry.COLUMN_NAME_TEXT + " TEXT )" );
 
         Log.d("DB", "Database created");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        db.execSQL("DROP TABLE IF EXISTS " + Entities.CommentEntry.TABLE_NAME);
+        onCreate(db);
     }
 
-    public void addComment(Comment comment) {
+    public void addComment(Comment comment) throws SQLiteConstraintException {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(Entities.CommentEntry.COLUMN_NAME_TITLE, comment.getTitle());
         cv.put(Entities.CommentEntry.COLUMN_NAME_TEXT, comment.getText());
-        db.insert(Entities.CommentEntry.TABLE_NAME, null, cv);
+        long result = db.insert(Entities.CommentEntry.TABLE_NAME, null, cv);
+        if (result == -1) {
+            throw new SQLiteConstraintException();
+        }
         db.close();
     }
 
